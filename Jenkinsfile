@@ -1,43 +1,40 @@
-pipeline {
 
-  agent any
+pipeline{
 
-  stages {
+	agent any
 
-    stage('Checkout Source') {
-      steps {
-        git url:'https://github.com/slyblao/hellowhale.git', branch:'master'
-      }
-    }
-    
-      stage("Build image") {
-            steps {
-                script {
-                    myapp = docker.build("slyblao/hellowhale:${env.BUILD_ID}")
-                }
-            }
-        }
-    
-      stage("Push image") {
-            steps {
-                script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
-                            myapp.push("latest")
-                            myapp.push("${env.BUILD_ID}")
-                    }
-                }
-            }
-        }
+	environment {
+		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+	}
 
-    
-    stage('Deploy App') {
-      steps {
-        script {
-          kubernetesDeploy(configs: "hellowhale.yml", kubeconfigId: "mykubeconfig")
-        }
-      }
-    }
+	stages {
 
-  }
+		stage('Build') {
+
+			steps {
+				sh 'docker build -t nbrico/hellowhale:latest .'
+			}
+		}
+
+		stage('Login') {
+
+			steps {
+				sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+			}
+		}
+
+		stage('Push') {
+
+			steps {
+				sh 'docker push nbrico/hellowhale:latest'
+			}
+		}
+	}
+
+	post {
+		always {
+			sh 'docker logout'
+		}
+	}
 
 }
