@@ -6,14 +6,14 @@ pipeline {
 
     stage('Checkout Source') {
       steps {
-        git url:'https://github.com/vamsijakkula/hellowhale.git', branch:'master'
+        git url:'https://github.com/slyblao/hellowhale.git', branch:'master'
       }
     }
     
       stage("Build image") {
             steps {
                 script {
-                    myapp = docker.build("vamsijakkula/hellowhale:${env.BUILD_ID}")
+                    myapp = docker.build("slyblao/hellowhale:${env.BUILD_ID}")
                 }
             }
         }
@@ -41,3 +41,6 @@ pipeline {
   }
 
 }
+© 2022 GitHub, Inc.
+Terms
+
